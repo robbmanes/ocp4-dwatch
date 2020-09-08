@@ -38,7 +38,7 @@ function check_sched_debug()
 function parse_sched_debug()
 {
 	echo "$(date) - $HOST"
-	/usr/bin/awk '/^\ D/' /home/rmanes/sched_debug.txt | while read LINE
+	/usr/bin/awk '/^\ D/' /proc/sched_debug | while read LINE
 	do
 		# do this ASAP, the condition may clear!
 		PID=$(echo $LINE | awk '{print $3}')
