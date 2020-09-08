@@ -11,7 +11,9 @@ function signal()
 
 function main()
 {
-	HOST=$(hostname)
+	PROCPATH="/hostproc"
+	SLEEP="10"
+	HOST=$(uname -n)
 	echo "Watching for D-state pids in /proc/sched_debug..."
 	while true
 	do
@@ -23,12 +25,12 @@ function main()
 
 function check_sched_debug()
 {
-	if [ ! -f /proc/sched_debug ]
+	if [ ! -f $PROCPATH/sched_debug ]
 	then
-		echo "/proc/sched_debug is not accessible, exiting."
+		echo "$PROCPATH/sched_debug is not accessible, exiting."
 		exit
 	fi
-	if ! cat /proc/sched_debug >> /dev/null
+	if ! cat $PROCPATH/sched_debug >> /dev/null
 	then
 		echo "Cannot read /proc/sched_debug, exiting."
 		exit
@@ -38,12 +40,12 @@ function check_sched_debug()
 function parse_sched_debug()
 {
 	echo "$(date) - $HOST"
-	/usr/bin/awk '/^\ D/' /proc/sched_debug | while read LINE
+	/usr/bin/awk '/^\ D/' $PROCPATH/sched_debug | while read LINE
 	do
 		# do this ASAP, the condition may clear!
 		PID=$(echo $LINE | awk '{print $3}')
-		STACK=$(cat /proc/$PID/stack)
-		WCHAN=$(cat /proc/$PID/wchan)
+		STACK=$(cat $PROCPATH/$PID/stack)
+		WCHAN=$(cat $PROCPATH/$PID/wchan)
 
 		# the rest is less pressing
 		COMM=$(echo $LINE | awk '{print $2}')
