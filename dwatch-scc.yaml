@@ -1,0 +1,24 @@
+allowHostPID: true
+apiVersion: security.openshift.io/v1
+defaultAddCapabilities: [] 
+fsGroup: 
+  type: RunAsAny
+groups: 
+- system:cluster-admins
+- system:nodes
+kind: SecurityContextConstraints
+metadata:
+  name: rhcos-dwatch
+priority: null
+readOnlyRootFilesystem: false
+requiredDropCapabilities: [] 
+runAsUser: 
+  type: RunAsAny
+seLinuxContext: 
+  type: RunAsAny
+seccompProfiles:
+- '*'
+supplementalGroups: 
+  type: RunAsAny
+volumes:
+ - hostPath

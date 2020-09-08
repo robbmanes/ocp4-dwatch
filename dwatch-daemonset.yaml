@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: rhcos-dwatch
+  namespace: kube-system
+  labels:
+    daemon: rhcos-dwatch
+spec:
+  selector:
+    matchLabels:
+      name: rhcos-dwatch
+  template:
+    metadata:
+      labels:
+        name: rhcos-dwatch
+    spec:
+      containers:
+      - name: rhcos-dwatch
+        image: quay.io/robbmanes/rhcos-dwatch:v1
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: 400Mi
+          requests:
+            cpu: 100m
+            memory: 400Mi
+        volumeMounts:
+        - mountPath: /hostproc
+          name: proc
+          readOnly: true
+        terminationGracePeriodSeconds: 30
+      volumes:
+      - name: proc
+        hostPath:
+          path: /proc
+          type: Directory
