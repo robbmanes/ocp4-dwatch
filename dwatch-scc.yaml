@@ -8,7 +8,7 @@ groups:
 - system:nodes
 kind: SecurityContextConstraints
 metadata:
-  name: rhcos-dwatch
+  name: ocp4-dwatch
 priority: null
 readOnlyRootFilesystem: false
 requiredDropCapabilities: [] 

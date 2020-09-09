@@ -1,7 +1,7 @@
 #!/bin/bash
 REGISTRY=quay.io
 REPO=robbmanes
-IMAGE_NAME=rhcos-dwatch
+IMAGE_NAME=ocp4-dwatch
 VERSION=v1
 
 

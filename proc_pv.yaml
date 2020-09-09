@@ -2,7 +2,7 @@ apiVersion: v1
 kind: PersistentVolume
 namespace: kube-system
 metadata:
-  name: rhcos-dwatch-pv
+  name: ocp4-dwatch-pv
   labels:
     type: local
 spec:

@@ -1,3 +1,3 @@
 FROM registry.fedoraproject.org/fedora-minimal
-COPY rhcos-dwatch.sh /root/rhcos-dwatch.sh
-CMD ["/root/rhcos-dwatch.sh"]
+COPY ocp4-dwatch.sh /root/ocp4-dwatch.sh
+CMD ["/root/ocp4-dwatch.sh"]
