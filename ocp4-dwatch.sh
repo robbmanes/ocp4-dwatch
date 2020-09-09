@@ -26,7 +26,7 @@ function main()
 
 function check_for_kmsg()
 {
-	if [ ! -z /dev/kmsg ]
+	if [ -f "/dev/kmsg" ]
 	then
 		echo "No /dev/kmsg exposed to container, exiting."
 		exit
