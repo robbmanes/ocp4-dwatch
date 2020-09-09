@@ -27,7 +27,6 @@ spec:
         volumeMounts:
         - mountPath: /hostproc
           name: proc
-          readOnly: true
         - mountPath: /dev/kmsg
           name: dev
         terminationGracePeriodSeconds: 30
