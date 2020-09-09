@@ -2,9 +2,9 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   name: ocp4-dwatch
-  namespace: kube-system
+  namespace: ocp4-dwatch
   labels:
-    daemon: ocp4-dwatch
+    app: ocp4-dwatch
 spec:
   selector:
     matchLabels:
@@ -28,9 +28,19 @@ spec:
         - mountPath: /hostproc
           name: proc
           readOnly: true
+        - mountPath: /dev/kmsg
+          name: dev
         terminationGracePeriodSeconds: 30
       volumes:
       - name: proc
         hostPath:
           path: /proc
           type: Directory
+      - name: dev
+        hostPath:
+          path: /dev/kmsg
+          type: CharDevice
+      serviceAccount: ocp4-dwatch
+      serviceAccountName: ocp4-dwatch
+      securityContext:
+        runAsUser: 0

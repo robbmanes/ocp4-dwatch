@@ -12,56 +12,63 @@ function signal()
 function main()
 {
 	PROCPATH="/hostproc"
-	SLEEP="10"
+	INTERVAL="10"
 	HOST=$(uname -n)
-	echo "Watching for D-state pids in $PROCPATH/sched_debug..."
+	KERNEL_HUNG_TASK_WARNINGS=50
+	KERNEL_HUNG_TASK_TIMEOUT=10
+
+	check_for_kmsg
+	setup_sysctls
+
+	echo "Watching for D-state pids in kernel ring buffer..."
+	parse_dmesg
+}
+
+function check_for_kmsg()
+{
+	if [ ! -z /dev/kmsg ]
+	then
+		echo "No /dev/kmsg exposed to container, exiting."
+		exit
+	fi
+}
+
+function setup_sysctls()
+{
+	echo $KERNEL_HUNG_TASK_WARNINGS > $PROCPATH/sys/kernel/hung_task_warnings
+	if [ $? != 0 ]
+	then
+		echo "Failed to set $PROCPATH/sys/kernel/hung_task_warnings, exiting."
+		echo "Is the procMount applied properly to the container?"
+		exit
+	fi
+
+	echo $KERNEL_HUNG_TASK_TIMEOUT=10
+	if [ $? != 0 ]
+	then
+		echo "Failed to set $PROCPATH/sys/kernel/hung_task_timeout, exiting."
+		echo "Is the procMount applied properly to the container?"
+		exit
+	fi
+}
+
+function parse_dmesg()
+{
 	while true
 	do
-		check_sched_debug
-		parse_sched_debug		
-		sleep 10
-	done
-}
-
-function check_sched_debug()
-{
-	if [ ! -f $PROCPATH/sched_debug ]
-	then
-		echo "$PROCPATH/sched_debug is not accessible, exiting."
-		exit
-	fi
-	if ! cat $PROCPATH/sched_debug >> /dev/null
-	then
-		echo "Cannot read /proc/sched_debug, exiting."
-		exit
-	fi
-}
-
-function parse_sched_debug()
-{
-	/usr/bin/awk '/^ D/' $PROCPATH/sched_debug | while read LINE
-	do
-		if [ -z "$LINE" ]
-		then
-			continue
-		fi
-
-		echo "$(date) - $HOST"
-
-		# do this ASAP, the condition may clear!
-		PID=$(echo $LINE | awk '{print $3}')
-		STACK=$(cat $PROCPATH/$PID/stack)
-		WCHAN=$(cat $PROCPATH/$PID/wchan)
-
-		# the rest is less pressing
-		COMM=$(echo $LINE | awk '{print $2}')
-		echo "comm=$COMM, pid=$PID, wchan=$WCHAN"
-		while IFS= read line
+		# this clears the buffer!!!
+		dmesg -cT | while read LINE
 		do
-			echo "	$line"
-		done < <(printf '%s\n' "$STACK")
-	done	
-	echo ""
+			if [ -z "$LINE" ]
+			then
+				continue
+			fi
+
+			echo "$(date) - $HOST"
+			echo "$LINE"
+		done	
+		sleep $INTERVAL
+	done
 }
 
 main
