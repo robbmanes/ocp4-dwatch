@@ -14,7 +14,7 @@ function main()
 	PROCPATH="/hostproc"
 	SLEEP="10"
 	HOST=$(uname -n)
-	echo "Watching for D-state pids in /proc/sched_debug..."
+	echo "Watching for D-state pids in $PROCPATH/sched_debug..."
 	while true
 	do
 		check_sched_debug
@@ -41,7 +41,7 @@ function parse_sched_debug()
 {
 	/usr/bin/awk '/^ D/' $PROCPATH/sched_debug | while read LINE
 	do
-		if [ -z $LINE ]
+		if [ -z "$LINE" ]
 		then
 			continue
 		fi
