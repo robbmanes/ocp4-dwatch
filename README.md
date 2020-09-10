@@ -9,38 +9,13 @@ If you have other tools watching `dmesg` or `/dev/kmsg`, this tool clears the ke
 This is a debugging tool provided without warranty.  It offers no support from Red Hat or any other official source.  Please use at your own risk.
 
 # Deploy on a Red Hat OpenShift 4.X cluster
-- Create the namespace:
+- Assuming you have set values as desired in the `ocp4-dwatch-deploy.yaml` file, create resources with:
 ```
-$ oc create -f ocp4-dwatch-namespace.yaml
+$ oc create -f ocp4-dwatch-deploy.yaml
 namespace/ocp4-dwatch created
-```
-
-- Create a new ServiceAccount:
-```
-$ oc create serviceaccount ocp4-dwatch -n ocp4-dwatch
-```
-
-- Grant priveleges to the ServiceAccount:
-```
-$ oc adm policy add-scc-to-user privileged -z ocp4-dwatch -n ocp4-dwatch
-```
-
-- Create the hostPath PV's required:
-```
-$ oc create -f ocp4-dwatch-pv.yaml
-persistentvolume/ocp4-dwatch-pv created
-```
-
-- Create the hostPath PVC's required:
-```
-$ oc create -f ocp4-dwatch-pvc.yaml
-persistentvolumeclaim/ocp4-dwatch-proc-pvc created
-```
-
-- Create the DaemonSet:
-```
-$ oc create -f ocp4-dwatch-daemonset.yaml
-daemonset.apps/ocp4-dwatch created
+serviceaccount/ocp4-dwatch-sa created
+securitycontextconstraints.security.openshift.io/ocp4-dwatch-scc created
+daemonset.apps/ocp4-dwatch-ds created
 ```
 
 # License

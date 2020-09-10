@@ -1,0 +1,90 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ocp4-dwatch
+  labels:
+    app: ocp4-dwatch
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ocp4-dwatch-sa
+  namespace: ocp4-dwatch
+  labels:
+    app: ocp4-dwatch
+---
+allowHostDirVolumePlugin: true
+allowHostPID: true
+allowHostPorts: true
+allowPrivilegeEscalation: true
+allowPrivilegedContainer: true
+allowedCapabilities:
+- '*'
+allowedUnsafeSysctls:
+- '*'
+apiVersion: security.openshift.io/v1
+fsGroup:
+  type: RunAsAny
+users:
+  - system:serviceaccount:ocp4-dwatch:ocp4-dwatch-sa
+kind: SecurityContextConstraints
+readOnlyRootFilesystem: false
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: RunAsAny
+seccompProfiles:
+- '*'
+metadata:
+  name: ocp4-dwatch-scc
+  namespace: ocp4-dwatch
+  labels:
+    app: ocp4-dwatch
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: ocp4-dwatch-ds
+  namespace: ocp4-dwatch
+  labels:
+    app: ocp4-dwatch
+spec:
+  selector:
+    matchLabels:
+      name: ocp4-dwatch
+  template:
+    metadata:
+      labels:
+        name: ocp4-dwatch
+        app: ocp4-dwatch
+    spec:
+      containers:
+      - name: ocp4-dwatch
+        image: quay.io/robbmanes/ocp4-dwatch:v1
+        imagePullPolicy: Always
+        resources:
+          limits:
+            memory: 400Mi
+          requests:
+            cpu: 100m
+            memory: 400Mi
+        volumeMounts:
+        - mountPath: /hostproc
+          name: proc
+        - mountPath: /dev/kmsg
+          name: dev
+        securityContext:
+          privileged: true
+          runAsUser: 0
+        terminationGracePeriodSeconds: 30
+      volumes:
+      - name: proc
+        hostPath:
+          path: /proc
+          type: Directory
+      - name: dev
+        hostPath:
+          path: /dev/kmsg
+          type: CharDevice
+      serviceAccount: ocp4-dwatch-sa
+      serviceAccountName: ocp4-dwatch-sa
