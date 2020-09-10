@@ -18,6 +18,17 @@ securitycontextconstraints.security.openshift.io/ocp4-dwatch-scc created
 daemonset.apps/ocp4-dwatch-ds created
 ```
 
+# Remove from a Red Hat OpenShift 4.X cluster
+- To remove all resources relating to `ocp4-dwatch` on your cluster, assuming you deployed with the above instructions, run:
+```
+$ oc delete all -l=app=ocp4-dwatch; oc delete scc ocp4-dwatch-scc; oc delete sa ocp4-dwatch-sa; oc delete project ocp4-dwatch
+pod "ocp4-dwatch-ds-2q9c4" deleted
+pod "ocp4-dwatch-ds-nc74k" deleted
+securitycontextconstraints.security.openshift.io "ocp4-dwatch-scc" deleted
+serviceaccount "ocp4-dwatch-sa" deleted
+project.project.openshift.io "ocp4-dwatch" deleted
+```
+
 # License
     Copyright 2020 Robert Thomas Manes <robbmanes@protonmail.com>
 
