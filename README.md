@@ -29,6 +29,34 @@ serviceaccount "ocp4-dwatch-sa" deleted
 project.project.openshift.io "ocp4-dwatch" deleted
 ```
 
+# Deployment Options
+A number of environment variables exist to change the behavior of `ocp4-dwatch`.  They are listed below.
+- `PROCPATH`
+The path in which to set the bind-mounted location of the host's `/proc` within the container.  Defaults to `/hostproc` to avoid conflict with `/proc` within the container namespace.
+
+- `INTERVAL`
+The amount of time between checking `dmesg` for D-state events.  Defaults to 60 seconds.
+
+- `KERNEL_HUNG_TASK_WARNINGS`
+The value to set `kernel.hung_task_warnings` to on the entire node.  As defined by [the kernel documentation](https://www.kernel.org/doc/Documentation/sysctl/kernel.txt):
+
+> The maximum number of warnings to report. During a check interval
+> if a hung task is detected, this value is decreased by 1.
+> When this value reaches 0, no more warnings will be reported.
+> This file shows up if CONFIG_DETECT_HUNG_TASK is enabled.
+> 
+> -1: report an infinite number of warnings.
+
+- `KERNEL_HUNG_TASK_TIMEOUT`
+The value to set `kernel.hung_task_timeout_secs` to on the entire node.  As defined by [the kernel documentation](https://www.kernel.org/doc/Documentation/sysctl/kernel.txt):
+
+> When a task in D state did not get scheduled
+> for more than this value report a warning.
+> This file shows up if CONFIG_DETECT_HUNG_TASK is enabled.
+> 
+> 0: means infinite timeout - no checking done.
+> Possible values to set are in range {0..LONG_MAX/HZ}.
+
 # License
     Copyright 2020 Robert Thomas Manes <robbmanes@protonmail.com>
 

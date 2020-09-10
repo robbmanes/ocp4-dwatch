@@ -11,17 +11,35 @@ function signal()
 
 function main()
 {
-	PROCPATH="/hostproc"
-	INTERVAL="10"
-	HOST=$(uname -n)
-	KERNEL_HUNG_TASK_WARNINGS=50
-	KERNEL_HUNG_TASK_TIMEOUT=10
-
+	get_options
 	check_for_kmsg
 	setup_sysctls
 
 	echo "Watching for D-state pids in kernel ring buffer..."
 	parse_dmesg
+}
+
+function get_options()
+{
+	if [ -z "$PROCPATH" ]
+	then
+		PROCPATH="/hostproc"
+	fi
+
+	if [ -z "$INTERVAL" ]
+	then
+		INTERVAL="10"
+	fi
+
+	if [ -z "$KERNEL_HUNG_TASK_WARNINGS" ]
+	then
+		KERNEL_HUNG_TASK_WARNINGS=50
+	fi
+
+	if [ -z "$KERNEL_HUNG_TASK_TIMEOUT" ]
+	then
+		KERNEL_HUNG_TASK_TIMEOUT=10
+	fi
 }
 
 function check_for_kmsg()
@@ -35,7 +53,8 @@ function check_for_kmsg()
 
 function setup_sysctls()
 {
-	echo $KERNEL_HUNG_TASK_WARNINGS > $PROCPATH/sys/kernel/hung_task_warnings
+	echo "Setting kernel.hung_task_warnings to $KERNEL_HUNG_TASK_WARNINGS..."
+	echo "$KERNEL_HUNG_TASK_WARNINGS" > $PROCPATH/sys/kernel/hung_task_warnings
 	if [ $? != 0 ]
 	then
 		echo "Failed to set $PROCPATH/sys/kernel/hung_task_warnings, exiting."
@@ -43,10 +62,11 @@ function setup_sysctls()
 		exit
 	fi
 
-	echo $KERNEL_HUNG_TASK_TIMEOUT=10
+	echo "Setting kernel.hung_task_timeout_secs to $KERNEL_HUNG_TASK_TIMEOUT..."
+	echo "$KERNEL_HUNG_TASK_TIMEOUT" > $PROCPATH/sys/kernel/hung_task_timeout_secs
 	if [ $? != 0 ]
 	then
-		echo "Failed to set $PROCPATH/sys/kernel/hung_task_timeout, exiting."
+		echo "Failed to set $PROCPATH/sys/kernel/hung_task_timeout_secs, exiting."
 		echo "Is the procMount applied properly to the container?"
 		exit
 	fi
@@ -64,7 +84,7 @@ function parse_dmesg()
 				continue
 			fi
 
-			echo "$(date) - $HOST"
+			echo "$(date)"
 			echo "$LINE"
 		done	
 		sleep $INTERVAL
