@@ -74,21 +74,39 @@ function setup_sysctls()
 
 function parse_dmesg()
 {
-	while true
-	do
-		# this clears the buffer!!!
-		dmesg -cT | while read LINE
-		do
-			if [ -z "$LINE" ]
-			then
-				continue
-			fi
+        OLDEST_DATE="0"
+        while true
+        do
+                DMESG=$(dmesg --time-format iso)
 
-			echo "$(date)"
-			echo "$LINE"
-		done	
-		sleep $INTERVAL
-	done
+		# Avoid subprocess piping here to preserve variables
+                while read LINE
+                do
+                        # Ignore empty lines
+                        if [ -z "$LINE" ]
+                        then
+                                break
+                        fi
+
+                        # Get the date of the current line
+                        NEWER_DATE="$(date --date="$(echo "$LINE" | cut -d\  -f1)" +%s.%N)"
+
+                        # Check if the new timestamp of logs is greater than the old one
+                        if [ 1 -eq "$(echo "${OLDEST_DATE} < ${NEWER_DATE}" | bc)" ]
+                        then
+                                # Make sure it's a hung task
+                                #if [ ]
+                                #then
+                                #        echo "$LINE"
+                                #fi
+                                echo "$LINE"
+                                # Set the current oldest date to this line
+                                OLDEST_DATE="$NEWER_DATE"
+                        fi
+                done < <(echo "$DMESG")
+
+                sleep $INTERVAL
+        done
 }
 
 main
