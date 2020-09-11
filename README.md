@@ -4,7 +4,11 @@ Watch for D-State process on Red Hat OpenShift 4 clusters and log them
 # About
 The ocp4-dwatch utility runs as a DaemonSet across your OpenShift 4.X cluster, and logs any occurances of D-state processes by monitoring `/dev/kmsg` as well as setting sysctls appropriate for produccing more logging.  It prints stacks and logs as appropriate to the pod logs.
 
-If you have other tools watching `dmesg` or `/dev/kmsg`, this tool clears the kernel ring buffer and likely will produce erratic results to other log aggregators.  It runs as a privelged container, with full access to /proc and /dev/kmsg, and with root access to the node.
+It runs as a privelged container in a DaemonSet, with full access to /proc and /dev/kmsg, and with root access to the node.  It runs in it's own security context, which tries to be as unintrusive as possible.
+
+Each pod log will be from a different node, where it will track occurances of hung tasks and their respective stacks, along with timestamps.
+
+Additional input to this project is always welcome, but we have to be careful to not over-utilize resources from the node in tracking input; the original form of this project frequently read `/proc/sched_debug` and printed `/proc/$PID/stack` which could cause softlockups from time to time if performed too frequently, which made things far worse.  Be careful in testing and adding additional commands per loop of data capture, and consider the expense to the system in resources wherever possible.
 
 This is a debugging tool provided without warranty.  It offers no support from Red Hat or any other official source.  Please use at your own risk.
 
@@ -31,13 +35,13 @@ project.project.openshift.io "ocp4-dwatch" deleted
 
 # Deployment Options
 A number of environment variables exist to change the behavior of `ocp4-dwatch`.  They are listed below.
-- `PROCPATH`
+- `PROCPATH`:
 The path in which to set the bind-mounted location of the host's `/proc` within the container.  Defaults to `/hostproc` to avoid conflict with `/proc` within the container namespace.
 
-- `INTERVAL`
+- `INTERVAL`:
 The amount of time between checking `dmesg` for D-state events.  Defaults to 60 seconds.
 
-- `KERNEL_HUNG_TASK_WARNINGS`
+- `KERNEL_HUNG_TASK_WARNINGS`:
 The value to set `kernel.hung_task_warnings` to on the entire node.  As defined by [the kernel documentation](https://www.kernel.org/doc/Documentation/sysctl/kernel.txt):
 
 > The maximum number of warnings to report. During a check interval
@@ -47,7 +51,7 @@ The value to set `kernel.hung_task_warnings` to on the entire node.  As defined 
 > 
 > -1: report an infinite number of warnings.
 
-- `KERNEL_HUNG_TASK_TIMEOUT`
+- `KERNEL_HUNG_TASK_TIMEOUT`:
 The value to set `kernel.hung_task_timeout_secs` to on the entire node.  As defined by [the kernel documentation](https://www.kernel.org/doc/Documentation/sysctl/kernel.txt):
 
 > When a task in D state did not get scheduled
